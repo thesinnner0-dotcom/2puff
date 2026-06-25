@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: #0A0A0F;
+  color: #fff;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  /* Buttons */
+  .btn-primary {
+    @apply font-bold px-6 py-3 rounded-xl text-white transition-all duration-200 active:scale-95 disabled:opacity-50;
+    background: linear-gradient(135deg, #7C3AED, #EC4899);
+    box-shadow: 0 4px 20px rgba(124,58,237,0.35);
+  }
+  .btn-primary:hover {
+    box-shadow: 0 6px 28px rgba(124,58,237,0.5);
+    transform: translateY(-1px);
+  }
+
+  .btn-tg {
+    @apply font-bold px-6 py-3 rounded-xl text-white transition-all duration-200 active:scale-95 flex items-center gap-2;
+    background: #229ED9;
+    box-shadow: 0 4px 20px rgba(34,158,217,0.3);
+  }
+  .btn-tg:hover {
+    background: #1a8abf;
+    box-shadow: 0 6px 28px rgba(34,158,217,0.45);
+    transform: translateY(-1px);
+  }
+
+  .btn-ghost {
+    @apply font-semibold px-6 py-3 rounded-xl text-gray-400 border border-gray-700 hover:border-gray-500 hover:text-white transition-all duration-200 active:scale-95;
+  }
+
+  /* Cards */
+  .card {
+    @apply rounded-2xl border border-puff-border;
+    background: #111827;
+  }
+
+  /* Input */
+  .input {
+    @apply w-full px-4 py-3 rounded-xl border border-puff-border bg-puff-card text-white placeholder-gray-600 focus:outline-none focus:border-puff-purple transition-colors;
+  }
+
+  /* Badge */
+  .badge-hot {
+    @apply text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wide;
+    background: linear-gradient(90deg, #EC4899, #F43F5E);
+    color: white;
+  }
+  .badge-new {
+    @apply text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wide;
+    background: linear-gradient(90deg, #7C3AED, #A855F7);
+    color: white;
+  }
+  .badge-sale {
+    @apply text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wide;
+    background: linear-gradient(90deg, #F59E0B, #F97316);
+    color: white;
+  }
+
+  /* Gradient text */
+  .grad-text {
+    background: linear-gradient(135deg, #A855F7, #EC4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Glow */
+  .glow-purple {
+    box-shadow: 0 0 30px rgba(124,58,237,0.2);
+  }
+}

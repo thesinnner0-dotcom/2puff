@@ -1,0 +1,163 @@
+'use client'
+import { useEffect, useRef } from 'react'
+
+export default function SmokeBackground() {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const resize = () => {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+    }
+    resize()
+    window.addEventListener('resize', resize)
+
+    // Smoke particle class
+    class SmokeParticle {
+      x: number
+      y: number
+      size: number
+      opacity: number
+      speedY: number
+      speedX: number
+      wobble: number
+      wobbleSpeed: number
+      wobbleAmount: number
+      life: number
+      maxLife: number
+      color: string
+
+      constructor(x: number, startY: number) {
+        this.x = x
+        this.y = startY
+        this.size = Math.random() * 60 + 20
+        this.opacity = 0
+        this.speedY = -(Math.random() * 0.4 + 0.15)
+        this.speedX = (Math.random() - 0.5) * 0.2
+        this.wobble = Math.random() * Math.PI * 2
+        this.wobbleSpeed = Math.random() * 0.008 + 0.003
+        this.wobbleAmount = Math.random() * 1.5 + 0.5
+        this.life = 0
+        this.maxLife = Math.random() * 400 + 300
+        // Soft purple/white smoke tones
+        const tones = [
+          'rgba(200,180,255,',  // soft purple
+          'rgba(220,200,255,',  // light lavender
+          'rgba(255,200,230,',  // soft pink
+          'rgba(180,160,220,',  // muted purple
+          'rgba(240,230,255,',  // near white purple
+        ]
+        this.color = tones[Math.floor(Math.random() * tones.length)]
+      }
+
+      update() {
+        this.life++
+        this.wobble += this.wobbleSpeed
+        this.x += Math.sin(this.wobble) * this.wobbleAmount + this.speedX
+        this.y += this.speedY
+        this.size += 0.3
+
+        // Fade in then fade out
+        const lifeRatio = this.life / this.maxLife
+        if (lifeRatio < 0.15) {
+          this.opacity = (lifeRatio / 0.15) * 0.12
+        } else if (lifeRatio < 0.6) {
+          this.opacity = 0.12
+        } else {
+          this.opacity = ((1 - lifeRatio) / 0.4) * 0.12
+        }
+      }
+
+      draw(ctx: CanvasRenderingContext2D) {
+        const grad = ctx.createRadialGradient(
+          this.x, this.y, 0,
+          this.x, this.y, this.size
+        )
+        grad.addColorStop(0, `${this.color}${this.opacity})`)
+        grad.addColorStop(0.4, `${this.color}${this.opacity * 0.6})`)
+        grad.addColorStop(1, `${this.color}0)`)
+
+        ctx.beginPath()
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2)
+        ctx.fillStyle = grad
+        ctx.fill()
+      }
+
+      isDead() {
+        return this.life >= this.maxLife
+      }
+    }
+
+    // Smoke sources — left and right sides, bottom
+    const getSources = () => [
+      // Left side sources
+      { x: canvas.width * 0.05, y: canvas.height, rate: 0.03 },
+      { x: canvas.width * 0.12, y: canvas.height, rate: 0.025 },
+      { x: canvas.width * 0.18, y: canvas.height * 0.8, rate: 0.02 },
+      // Right side sources
+      { x: canvas.width * 0.88, y: canvas.height, rate: 0.03 },
+      { x: canvas.width * 0.93, y: canvas.height, rate: 0.025 },
+      { x: canvas.width * 0.82, y: canvas.height * 0.75, rate: 0.02 },
+      // A few center-bottom
+      { x: canvas.width * 0.35, y: canvas.height, rate: 0.01 },
+      { x: canvas.width * 0.65, y: canvas.height, rate: 0.01 },
+    ]
+
+    let particles: SmokeParticle[] = []
+    let frame = 0
+    let animId: number
+
+    const animate = () => {
+      animId = requestAnimationFrame(animate)
+      frame++
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+      // Spawn new particles
+      const sources = getSources()
+      sources.forEach(src => {
+        if (Math.random() < src.rate) {
+          const spread = canvas.width * 0.03
+          particles.push(
+            new SmokeParticle(
+              src.x + (Math.random() - 0.5) * spread,
+              src.y
+            )
+          )
+        }
+      })
+
+      // Update + draw
+      particles = particles.filter(p => !p.isDead())
+      particles.forEach(p => {
+        p.update()
+        p.draw(ctx)
+      })
+
+      // Cap particles
+      if (particles.length > 120) {
+        particles = particles.slice(particles.length - 120)
+      }
+    }
+
+    animate()
+
+    return () => {
+      cancelAnimationFrame(animId)
+      window.removeEventListener('resize', resize)
+    }
+  }, [])
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      style={{ zIndex: 1, mixBlendMode: 'screen' }}
+    />
+  )
+}

@@ -1,0 +1,43 @@
+[
+  {
+    "id": "demo1",
+    "name": "BC5000 Watermelon Ice",
+    "brand": "ELFBAR",
+    "price": 599,
+    "oldPrice": 749,
+    "description": "Одноразовий вейп з 5000 затяжками. Смак кавуна з льодом.",
+    "category": "disposable",
+    "nicotine": "5%",
+    "puffs": 5000,
+    "flavor": "Кавун + Лід",
+    "inStock": true,
+    "image": "🍉",
+    "badge": "hot"
+  },
+  {
+    "id": "demo2",
+    "name": "BM5000 Mango Peach",
+    "brand": "LOST MARY",
+    "price": 649,
+    "description": "תרופיו смак манго та персика. 5000 затяжок.",
+    "category": "disposable",
+    "nicotine": "5%",
+    "puffs": 5000,
+    "flavor": "Манго + Персик",
+    "inStock": true,
+    "image": "🥭",
+    "badge": "new"
+  },
+  {
+    "id": "demo3",
+    "name": "XROS 3",
+    "brand": "VAPORESSO",
+    "price": 1199,
+    "oldPrice": 1399,
+    "description": "Елегантна pod-система з автозатяжкою. 1000mAh.",
+    "category": "pod",
+    "inStock": true,
+    "image": "✨",
+    "badge": "sale"
+  }
+]
