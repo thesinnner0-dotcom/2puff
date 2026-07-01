@@ -5,9 +5,11 @@ import { ArrowLeft, ShoppingCart, Check } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
+import { useParams } from 'next/navigation'
 import { buildTelegramUrl, Product } from '@/lib/data'
 
-export default function ProductPage({ params }: { params: { id: string } }) {
+export default function ProductPage() {
+  const params = useParams<{ id: string }>()
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const { addItem, items } = useCart()
