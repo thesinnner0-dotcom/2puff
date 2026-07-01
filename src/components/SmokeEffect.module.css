@@ -1,0 +1,56 @@
+/* ── root sits inside the hero (position:relative) ── */
+.root {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: visible;
+}
+
+/* ── individual wisp: timing set via inline animationDuration / animationDelay ── */
+.wisp {
+  position: absolute;
+  bottom: 0;
+  border-radius: 50% 50% 40% 60% / 60% 40% 60% 40%;
+  filter: blur(20px);
+  animation-name: rise;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-fill-mode: both;
+}
+
+@keyframes rise {
+  0%   { transform: translateY(0)      scaleX(1.00) rotate(0deg);   opacity: 0;    }
+  7%   { opacity: 1; }
+  38%  { transform: translateY(-130px) scaleX(1.40) rotate(5deg);   opacity: 0.90; }
+  68%  { transform: translateY(-270px) scaleX(1.10) rotate(-4deg);  opacity: 0.38; }
+  100% { transform: translateY(-430px) scaleX(0.70) rotate(7deg);   opacity: 0;    }
+}
+
+/* ── click burst container ── */
+.bursts {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.burst {
+  position: fixed;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(240, 240, 255, 0.65) 0%,
+    rgba(180, 150, 255, 0.25) 55%,
+    transparent 80%
+  );
+  filter: blur(12px);
+  pointer-events: none;
+  animation: burstOut 850ms ease-out forwards;
+}
+
+@keyframes burstOut {
+  0%   { transform: scale(0.1);  opacity: 1;    }
+  40%  { transform: scale(1.5);  opacity: 0.75; }
+  100% { transform: scale(3.2);  opacity: 0;    }
+}

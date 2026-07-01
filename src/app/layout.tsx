@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import SmokeCanvas from '@/components/SmokeCanvas'
 
 export const metadata: Metadata = {
   title: '2PUFF — Вейп магазин в Україні',
@@ -9,7 +10,12 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="uk">
-      <body>{children}</body>
+      <body style={{ position: 'relative' }}>
+        <SmokeCanvas />
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          {children}
+        </div>
+      </body>
     </html>
   )
 }

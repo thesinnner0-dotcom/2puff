@@ -1,54 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import fs from 'fs'
-import path from 'path'
+import { getCrmProducts } from '@/lib/crm'
 
-const DB_PATH = path.join(process.cwd(), 'data', 'products.json')
+export const dynamic = 'force-dynamic'
 
-function readProducts() {
+// GET — products from the CRM. ?includeHidden=1 returns hidden products too
+// (for the admin panel); by default hidden products are excluded (catalog).
+export async function GET(req: NextRequest) {
   try {
-    const raw = fs.readFileSync(DB_PATH, 'utf-8')
-    return JSON.parse(raw)
-  } catch {
-    return []
+    const includeHidden = req.nextUrl.searchParams.get('includeHidden') === '1'
+    const products = await getCrmProducts(includeHidden)
+    return NextResponse.json(products)
+  } catch (error) {
+    console.error('Failed to load CRM products:', error)
+    return NextResponse.json(
+      { error: 'Не вдалося завантажити товари' },
+      { status: 502 },
+    )
   }
-}
-
-function writeProducts(products: unknown[]) {
-  fs.writeFileSync(DB_PATH, JSON.stringify(products, null, 2), 'utf-8')
-}
-
-// GET — all products
-export async function GET() {
-  const products = readProducts()
-  return NextResponse.json(products)
-}
-
-// POST — add new product
-export async function POST(req: NextRequest) {
-  const product = await req.json()
-  const products = readProducts()
-  const newProduct = { ...product, id: 'p' + Date.now() }
-  products.unshift(newProduct)
-  writeProducts(products)
-  return NextResponse.json(newProduct)
-}
-
-// PUT — update product
-export async function PUT(req: NextRequest) {
-  const product = await req.json()
-  const products = readProducts()
-  const idx = products.findIndex((p: { id: string }) => p.id === product.id)
-  if (idx === -1) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  products[idx] = product
-  writeProducts(products)
-  return NextResponse.json(product)
-}
-
-// DELETE — delete product
-export async function DELETE(req: NextRequest) {
-  const { id } = await req.json()
-  const products = readProducts()
-  const filtered = products.filter((p: { id: string }) => p.id !== id)
-  writeProducts(filtered)
-  return NextResponse.json({ success: true })
 }

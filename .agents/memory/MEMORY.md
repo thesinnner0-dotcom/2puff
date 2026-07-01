@@ -1,0 +1,3 @@
+- [Cart promo rules](cart-promo-rules.md) — discounts cheapest-unit based; computePromo is sole source of truth; checkout gated by upsell popups.
+- [CRM product/order source](crm-product-source.md) — catalog & orders flow through crm-dna.xyz; admin CRUD obsolete; token server-side only in crm.ts
+- [Admin product overrides](admin-overrides.md) — images/description/category layered via data/*.json merged in crm.ts; NEVER import an fs/promises module into a 'use client' component (split client-safe constants out)

@@ -1,16 +1,30 @@
 'use client'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useCart } from '@/lib/store'
-import { TELEGRAM_USERNAME } from '@/lib/data'
+import { TELEGRAM_USERNAME, computePromo } from '@/lib/data'
 import Navbar from '@/components/Navbar'
 import OrderModal from '@/components/OrderModal'
-import { Trash2, Plus, Minus, ShoppingBag, MessageCircle } from 'lucide-react'
+import UpsellModal from '@/components/UpsellModal'
+import { Trash2, Plus, Minus, ShoppingBag, MessageCircle, Gift, Percent } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 
 export default function CartPage() {
-  const { items, removeItem, updateQty, total } = useCart()
+  const { items, removeItem, updateQty, count } = useCart()
   const [showOrder, setShowOrder] = useState(false)
+  const [upsell, setUpsell] = useState<null | 'second' | 'gift'>(null)
+  const router = useRouter()
+
+  const promo = computePromo(items)
+
+  // Gate checkout behind the upsell popups
+  const handleCheckout = () => {
+    const c = count()
+    if (c === 1) { setUpsell('second'); return }
+    if (c === 2 || c === 3) { setUpsell('gift'); return }
+    setShowOrder(true)
+  }
 
   if (items.length === 0) return (
     <main>
@@ -30,6 +44,13 @@ export default function CartPage() {
     <main>
       <Navbar />
       {showOrder && <OrderModal onClose={() => setShowOrder(false)} />}
+      {upsell && (
+        <UpsellModal
+          tier={upsell}
+          onClose={() => { setUpsell(null); setShowOrder(true) }}
+          onAddMore={() => { setUpsell(null); router.push('/#catalog') }}
+        />
+      )}
 
       <div className="max-w-5xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-black text-white mb-8">Кошик</h1>
@@ -38,7 +59,7 @@ export default function CartPage() {
           {/* Items */}
           <div className="lg:col-span-2 flex flex-col gap-3">
             {items.map(({ product, quantity }) => {
-              const isUrl = product.image.startsWith('http')
+              const isUrl = product.image.startsWith('/') || product.image.startsWith('http')
               return (
                 <div key={product.id} className="card p-4 flex items-center gap-4">
                   <div className="w-16 h-16 rounded-xl flex-shrink-0 flex items-center justify-center relative overflow-hidden"
@@ -85,17 +106,49 @@ export default function CartPage() {
                 </div>
               ))}
             </div>
-            <div className="border-t border-puff-border pt-4 mb-6">
-              <div className="flex justify-between">
+            <div className="border-t border-puff-border pt-4 mb-3 flex flex-col gap-2">
+              <div className="flex justify-between text-sm text-gray-400">
+                <span>Сума:</span>
+                <span>{promo.subtotal.toLocaleString('uk-UA')} ₴</span>
+              </div>
+              {promo.secondOff > 0 && (
+                <div className="flex justify-between text-sm font-semibold text-puff-purple">
+                  <span className="flex items-center gap-1"><Percent className="w-3.5 h-3.5" /> Знижка 20% (2-й товар):</span>
+                  <span>−{promo.secondOff.toLocaleString('uk-UA')} ₴</span>
+                </div>
+              )}
+              {promo.giftValue > 0 && (
+                <div className="flex justify-between text-sm font-semibold text-amber-400">
+                  <span className="flex items-center gap-1"><Gift className="w-3.5 h-3.5" /> 4-й товар у подарунок:</span>
+                  <span>−{promo.giftValue.toLocaleString('uk-UA')} ₴</span>
+                </div>
+              )}
+            </div>
+            <div className="border-t border-puff-border pt-4 mb-4">
+              <div className="flex justify-between items-center">
                 <span className="font-semibold text-gray-400">Разом:</span>
-                <span className="text-2xl font-black text-white">{total().toLocaleString('uk-UA')} ₴</span>
+                <span className="text-2xl font-black text-white">{promo.total.toLocaleString('uk-UA')} ₴</span>
               </div>
               <p className="text-xs text-gray-600 mt-1">+ вартість доставки НП</p>
             </div>
 
-            {/* PRIMARY: Order button → opens modal */}
+            {/* Progress hint toward next reward */}
+            {promo.units === 1 && (
+              <div className="rounded-xl p-3 mb-3 text-xs font-semibold text-center text-puff-purple"
+                style={{ background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.25)' }}>
+                💡 Додайте ще 1 товар і отримайте знижку 20%!
+              </div>
+            )}
+            {(promo.units === 2 || promo.units === 3) && (
+              <div className="rounded-xl p-3 mb-3 text-xs font-semibold text-center text-amber-400"
+                style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.25)' }}>
+                🎁 Ще {4 - promo.units} товар(и) — і 4-й у подарунок!
+              </div>
+            )}
+
+            {/* PRIMARY: Order button → upsell gate → modal */}
             <button
-              onClick={() => setShowOrder(true)}
+              onClick={handleCheckout}
               className="btn-tg w-full justify-center text-base py-3.5 mb-3"
             >
               ✈️ Оформити замовлення

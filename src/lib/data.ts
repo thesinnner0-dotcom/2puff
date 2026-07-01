@@ -5,7 +5,7 @@ export interface Product {
   price: number
   oldPrice?: number
   description: string
-  category: 'disposable' | 'pod' | 'mod' | 'liquid' | 'accessory'
+  category: 'disposable' | 'pod' | 'mod' | 'liquid' | 'accessory' | 'refill'
   nicotine?: string
   puffs?: number
   volume?: string
@@ -13,11 +13,51 @@ export interface Product {
   inStock: boolean
   image: string       // URL або emoji
   badge?: 'hot' | 'new' | 'sale'
+  hidden?: boolean    // приховано з каталогу (керується в адмінці)
 }
 
 export interface CartItem {
   product: Product
   quantity: number
+}
+
+// ── Promo / upsell logic ──────────────────────────────────
+// Rule 1: 20% off the 2nd product (when 2+ units in cart)
+// Rule 2: buy 3 → 4th product free (when 4+ units in cart)
+export interface PromoResult {
+  subtotal: number
+  secondOff: number   // 20% discount value on the 2nd product
+  giftValue: number   // value of the free 4th product
+  discount: number
+  total: number
+  units: number
+}
+
+export function computePromo(items: CartItem[]): PromoResult {
+  const subtotal = items.reduce((s, i) => s + i.product.price * i.quantity, 0)
+
+  // expand into individual units, cheapest first
+  const unitPrices: number[] = []
+  items.forEach(i => {
+    for (let k = 0; k < i.quantity; k++) unitPrices.push(i.product.price)
+  })
+  unitPrices.sort((a, b) => a - b)
+  const units = unitPrices.length
+
+  let giftValue = 0
+  let secondOff = 0
+
+  if (units >= 4) {
+    giftValue = unitPrices[0]                      // cheapest unit is free
+  }
+  if (units >= 2) {
+    const idx = units >= 4 ? 1 : 0                 // discount next cheapest after any gift
+    secondOff = Math.round(unitPrices[idx] * 0.2)  // 20% off the 2nd product
+  }
+
+  const discount = giftValue + secondOff
+  const total = Math.max(0, subtotal - discount)
+  return { subtotal, secondOff, giftValue, discount, total, units }
 }
 
 // ── Telegram ──────────────────────────────────────────────

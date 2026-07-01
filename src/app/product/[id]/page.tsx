@@ -1,17 +1,36 @@
 'use client'
-import { useProducts, useCart } from '@/lib/store'
+import { useCart } from '@/lib/store'
 import Navbar from '@/components/Navbar'
 import { ArrowLeft, ShoppingCart, Check } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useState } from 'react'
-import { buildTelegramUrl } from '@/lib/data'
+import { useState, useEffect } from 'react'
+import { buildTelegramUrl, Product } from '@/lib/data'
 
 export default function ProductPage({ params }: { params: { id: string } }) {
-  const products = useProducts(s => s.products)
-  const product = products.find(p => p.id === params.id)
+  const [product, setProduct] = useState<Product | null>(null)
+  const [loading, setLoading] = useState(true)
   const { addItem, items } = useCart()
   const [added, setAdded] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/products')
+      .then(r => r.json())
+      .then((products: Product[]) => {
+        setProduct(products.find(p => p.id === params.id) ?? null)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [params.id])
+
+  if (loading) return (
+    <main>
+      <Navbar />
+      <div className="text-center py-24 text-gray-500">
+        <p className="font-bold">Завантаження...</p>
+      </div>
+    </main>
+  )
 
   if (!product) return (
     <main>
@@ -30,7 +49,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     setTimeout(() => setAdded(false), 1500)
   }
 
-  const isUrl = product.image.startsWith('http')
+  const isUrl = product.image.startsWith('/') || product.image.startsWith('http')
   const cartWithThis = [...items, { product, quantity: 1 }]
   const tgUrl = buildTelegramUrl(cartWithThis)
 
@@ -46,7 +65,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           {/* Image */}
           <div className="card flex items-center justify-center min-h-[320px] relative overflow-hidden" style={{ background: 'linear-gradient(135deg,#1a0533,#0d1b2a)' }}>
             {isUrl
-              ? <Image src={product.image} alt={product.name} fill className="object-contain p-8" />
+              ? <Image src={product.image} alt={product.name} fill priority sizes="(max-width: 768px) 100vw, 50vw" className="object-contain p-8" />
               : <span className="text-[100px] select-none">{product.image}</span>
             }
             {product.badge && (

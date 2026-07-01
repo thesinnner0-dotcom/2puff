@@ -18,14 +18,14 @@ export default function ProductCard({ product }: { product: Product }) {
     setTimeout(() => setAdded(false), 1500)
   }
 
-  const isUrl = product.image.startsWith('http')
+  const isUrl = product.image.startsWith('/') || product.image.startsWith('http')
 
   return (
     <Link href={`/product/${product.id}`} className="card group flex flex-col overflow-hidden hover:border-puff-purple transition-all duration-300 hover:-translate-y-0.5">
       {/* Image */}
       <div className="relative h-44 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #1a0533, #0d1b2a)' }}>
         {isUrl ? (
-          <Image src={product.image} alt={product.name} fill className="object-cover" />
+          <Image src={product.image} alt={product.name} fill sizes="(max-width: 768px) 50vw, 20vw" className="object-cover" />
         ) : (
           <span className="text-6xl select-none">{product.image}</span>
         )}
